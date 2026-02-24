@@ -1,10 +1,10 @@
 
-AVRASM ver. 2.2.8  D:\MSYS\SW1MSYS_TA\LAB2\LAB2\LAB2\main.asm Mon Feb 09 21:54:00 2026
+AVRASM ver. 2.2.8  D:\MSYS\SW1MSYS_TA\LAB5\LAB5\LAB5\main.asm Tue Feb 24 08:50:35 2026
 
 [builtin](2): Including file 'D:/ATMEL_STUDIO\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m2560def.inc'
 [builtin](2): Including file 'D:/ATMEL_STUDIO\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m2560def.inc'
                                  
-                                 ;********** MSYS, LAB1 **********
+                                 
                                  
                                  ;***** Created: 2011-02-09 12:03 ******* Source: ATmega2560.xml **********
                                  ;*************************************************************************
@@ -1842,82 +1842,289 @@ AVRASM ver. 2.2.8  D:\MSYS\SW1MSYS_TA\LAB2\LAB2\LAB2\main.asm Mon Feb 09 21:54:0
                                  
                                  ; ***** END OF FILE ******************************************************
                                  
-                                 ;********************************
                                  
-                                 ;********** INITIERING **********
+                                 //LAB5
+                                 
+                                 
+000000 e201                          LDI R16,HIGH(RAMEND)
+000001 bf0e                          OUT SPH, R16
+000002 ef0f                          LDI R16,LOW(RAMEND)
+000003 bf0d                          OUT SPL, R16
+                                 
+                                 // 1- create a function to add two 32 bit numbers together
+                                 
+                                 // 2- write a program that uses multiple ASM instructions
+                                 
+                                 // 3- write and test functions that uses bitmasking
+                                 
+                                 
                                  
                                  
                                  /*
-                                 highest valid RAM address in MCU
-                                 AVR regs are 8 bits wide,
-                                 so 1 byte is the lower byte and 1 is the high byte
-                                 
-                                 compiler knows SPH is the upper 8 bits and SPL is the lower 8 bits, this it "Knows" what to do
-                                 
-                                 
-                                 the stack pointer starts from the top and grows DOWNWARDS!
-                                 load the high byte first then the low byte
-                                 
-                                 look at page 14 in datasheet for AVR CPU GPIO working registers
-                                 Section 7.6 explains the stack pointer - the SP must be set to point above 0x0200, 
-                                 everything below this point is not SRAM, but GPIO registers
-                                 Data address space:
-                                 
-                                 0x0000 ??
-                                         ?  R0  (CPU register)
-                                         ?  R1
-                                         ?  ...
-                                 0x001F ??  R31
-                                 ??????????????????????
-                                 0x0020 � 0x005F  I/O registers
-                                 ??????????????????????
-                                 0x0060 � 0x01FF  Extended I/O
-                                 ??????????????????????
-                                 0x0200 � RAMEND  SRAM
+                                 ADD Rd, Rr
+                                 ADC Rd, Rr
+                                 SUB Rd, Rr
+                                 SBC Rd, Rr
+                                 MUL Rd, Rr
                                  
                                  */
                                  
-                                 
-000000 e201                         LDI  R16,HIGH(RAMEND) ;Initialize Stack Pointer
-000001 bf0e                         OUT  SPH,R16
-000002 ef0f                         LDI  R16,LOW(RAMEND)
-000003 bf0d                         OUT  SPL,R16           
-000004 ef0f                         SER  R16              ;PORTB = Outputs
-000005 b904                         OUT  DDRB,R16
-                                 ;********** PROGRAM-LOOP ********
-                                    
-                                 
-                                 LOOP:
-000006 9503                         INC R16
-000007 b905                         OUT PORTB, R16
-000008 940e 000c                    CALL DELAY 
-00000a 940c 0006                    JMP LOOP
-                                 
-                                 DELAY:
-00000c 2711                         CLR R17
-00000d ec28                         LDI R18, 200
-                                 AGAIN:
-00000e 951a                         DEC R17
-00000f f7f1                         BRNE AGAIN
-000010 952a                         DEC R18
-000011 f7e1                         BRNE AGAIN
-000012 9508                         RET
-                                 
-                                 
+                                 // 1 (1*10^9 + 2*10^9)
+                                 // 32 bit value 1
+                                 // 0011 1011 1001 1010 1100 1010 0000 0000
+                                 // 32 bit value 2
+                                 // 0111 0111 0011 0101 1001 0100 0000 0000
                                  /*
-                                    LDI  R16,200
-                                    STS  0x280,R16
-                                    LDI  R16,5
-                                    LDI  R17,17
-                                    LDS  R16,0x280
-                                    DEC  R16
-                                    MOV  R18,R16
-                                    ADD  R17,R18
-                                    INC  R17
-                                    INC  R17
-                                    COM  R17
-                                 HER:
-                                    JMP  HER 
+                                 LSB first
+                                 Value 1 gets assigned R19-R16
+                                 
+                                 R16 = 00000000
+                                 R17 = 11001010
+                                 R18 = 10011010
+                                 R19 = 00111011
+                                 
+                                 Value 2 gets assigned R23-R20 
+                                 R20 = 00000000 
+                                 R21 = 10010100
+                                 R22 = 00110101
+                                 R23 = 01110111
+                                 
+                                 addition goes as follows
+                                 
+                                 R16 = R16 + R20  (may generate a carry)
+                                 R17 = R17 + R21 + C
+                                 R18 = R18 + R22 + C
+                                 R19 = R19 + R23 + C
+                                 
+                                 
+                                 */
+                                 
+                                 // load all registers
+000004 e000                          LDI R16, 0b00000000
+000005 ec1a                          LDI R17, 0b11001010
+000006 e92a                          LDI R18, 0b10011010
+000007 e33b                          LDI R19, 0b00111011
+000008 e040                          LDI R20, 0b00000000
+000009 e954                          LDI R21, 0b10010100
+00000a e365                          LDI R22, 0b00110101
+00000b e777                          LDI R23, 0b01110111
+                                 
+                                 // do calculation
+                                 
+00000c 0f04                          ADD R16, R20
+00000d 1f15                          ADC R17, R21
+00000e 1f26                          ADC R18, R22
+00000f 1f37                          ADC R19, R23
+                                 //UNSIGNED BTW! - only works as unsigned, due to the fact signed is 2.147.483.647 as max value
+                                     
+                                 //Ex 2
+                                 
+                                 //Port A is inputs
+                                 
+000010 2700                          CLR R16
+000011 b901                          OUT DDRA, R16
+                                    
+                                 //Port B is outputs
+000012 ef0f                          SER R16
+000013 b904                          OUT DDRB, R16
+                                 //turn off all LEDs
+000014 2700                          CLR R16
+000015 b905                          OUT PORTB, R16
+                                 
+                                 //pool all the PINS
+                                 HERE:
+                                     //sample inputs ONCE
+                                 
+000016 b140                          IN R20, PINA
+000017 9540                          COM R20
+                                 
+                                 
+000018 ff47                          SBRS R20, 7
+000019 c003                          RJMP CASE_6
+00001a b105                          IN R16, PORTB
+00001b 9503                          INC R16
+00001c b905                          OUT PORTB, R16
+                                     
+                                 CASE_6:
+00001d ff46                          SBRS R20, 6
+00001e c003                          RJMP CASE_5
+00001f b105                          IN R16, PORTB
+000020 950a                          DEC R16
+000021 b905                          OUT PORTB, R16
+                                 
+                                 CASE_5:
+000022 ff45                          SBRS R20, 5
+000023 c003                          RJMP CASE_4
+000024 b105                          IN R16, PORTB
+000025 9502                          SWAP R16
+000026 b905                          OUT PORTB, R16
+                                 
+                                 
+                                 CASE_4:
+                                 
+000027 ff44                          SBRS R20, 4
+000028 c003                          RJMP CASE_3
+000029 b105                          IN R16, PORTB
+00002a 9500                          COM R16
+00002b b905                          OUT PORTB, R16
+                                 
+                                 CASE_3:
+00002c ff43                          SBRS R20, 3
+00002d c006                          RJMP CASE_2
+00002e b105                          IN R16, PORTB
+00002f e014                          LDI R17, 4
+                                 SHIFT_LOOP:
+000030 9506                          LSR R16
+000031 951a                          DEC R17
+000032 f7e9                          BRNE SHIFT_LOOP
+000033 b905                          OUT PORTB, R16
+                                 
+                                 
+                                 CASE_2:
+000034 ff42                          SBRS R20, 2
+                                     //TODO - ignore for now
+                                 
+                                 CASE_1:
+000035 ff41                          SBRS R20, 1
+000036 c003                          RJMP CASE_0
+000037 b105                          IN R16, PORTB
+000038 770e                          ANDI R16, 0b01111110
+000039 b905                          OUT PORTB, R16
+                                 
+                                 CASE_0:
+00003a ff40                          SBRS R20, 0
+00003b 940c 0040                     JMP MAIN
+00003d b105                          IN R16, PORTB
+00003e 6f0f                          ORI R16, 0b11111111
+00003f b905                          OUT PORTB, R16
+                                     
+                                 //SW7 - inc PORTB
+                                 //SW6 - dec PORTB
+                                 //SW5 - value of LED7-4 switches with LED3-0 (use a SWAPF or something)
+                                 //SW4 - complement all LED's
+                                 //SW3 - value of PORTB is divided by 8 (shift down)
+                                 //SW2 - value of PORTB is divided by 7 (actual divison)
+                                 //SW1 - LED7 & 0 are turned off, while others are unaffected
+                                 //SW0 - LED7 & 0 are turned on, while others are unaffected
+                                 
+                                     //READ PIN A
+                                 
+                                  MAIN:
+000040 940e 0043                     CALL DELAY_1S
+                                 
+000042 cfd3                          RJMP HERE
+                                 
+                                 DELAY_1S:
+000043 e624                          LDI R18, 100 ; outer loop
+                                 OUTER:
+000044 ec38                          LDI R19, 200 ; middle
+                                 MIDDLE:
+000045 ec48                          LDI R20, 200 ; inner
+                                 INNER:
+000046 954a                          DEC R20
+000047 f7f1                          BRNE INNER
+000048 953a                          DEC R19
+000049 f7d9                          BRNE MIDDLE
+00004a 952a                          DEC R18
+00004b f7c1                          BRNE OUTER
+00004c 9508                          RET
+                                 
+                                 
+                                 
+                                 ; // OFFICIAL LØSNING
+                                 
+                                 
+                                 ;  HERE:
+                                 ;    LDI  R20,2             ;Tænd LED 2
+                                 ;    CALL LED_ON
+                                 ;    CALL DELAY
+                                 
+                                 ;    LDI  R20,7             ;Tænd LED 7
+                                 ;    CALL LED_ON
+                                 ;    CALL DELAY
+                                 
+                                 ;    SER  R16               ;Tænd alle LEDs
+                                 ;    OUT  PORTB,R16
+                                 ;    CALL DELAY
+                                 
+                                 ;    LDI  R20,5             ;Sluk LED 5
+                                 ;    CALL LED_OFF
+                                 ;    CALL DELAY
+                                 
+                                 ;    LDI  R20,0             ;Sluk LED 0
+                                 ;    CALL LED_OFF
+                                 ;    CALL DELAY
+                                 
+                                 ;    LDI  R20,0             ;Toggle LED 0
+                                 ;    CALL LED_TOGGLE
+                                 ;    CALL DELAY
+                                 
+                                 ;    LDI  R20,7             ;Toggle LED 7
+                                 ;    CALL LED_TOGGLE
+                                 ;    CALL DELAY
+                                 
+                                 ;    CLR  R16               ;Sluk alle LEDs
+                                 ;    OUT  PORTB,R16
+                                 ;    CALL DELAY
+                                 
+                                 ;    JMP HERE               ;Gentag loop
+                                 
+                                 ; ;************ LED_OFF **********
+                                 ; ;***** Slukker en LED på PB ****
+                                 ; ;***** Bit nr.(0-7) i R20   ****
+                                 ; ;*******************************
+                                 ; LED_OFF:
+                                 ;    LDI  R21,1             ;R21 = 0b00000001
+                                 ;    CPI  R20,0
+                                 ;    BREQ KLAR1             ;Hop, hvis LED nr. = 0
+                                 ; IGEN1:
+                                 ;    LSL  R21               ;Venstre-skift R21
+                                 ;    DEC  R20               ;ialt "LED nr." pladser
+                                 ;    BRNE IGEN1
+                                 ; KLAR1:
+                                 ;    COM  R21               ;Inverter "masken" 
+                                 ;    IN   R20,PINB          ;Aflæs alle LEDs
+                                 ;    AND  R20,R21           ;- lav bitvis AND   
+                                 ;    OUT  PORTB,R20         ;- og skriv ud til LEDs igen
+                                 ;    RET	
+                                 ; ;*******************************
+                                 
+                                 ; ;************ LED_ON ***********
+                                 ; ;***** Taender en LED på PB ****
+                                 ; ;***** Bit nr.(0-7) i R20   ****
+                                 ; ;*******************************
+                                 ; LED_ON:
+                                 
+                                 ;    ;<-------- Skriv den manglende kode her
+                                 
+                                 
+                                 ;    RET	
+                                 ; ;*******************************
+                                 
+                                 ; ;********** LED_TOGGLE *********
+                                 ; ;***** Toggler en LED på PB ****
+                                 ; ;***** Bit nr.(0-7) i R20   ****
+                                 ; ;*******************************
+                                 ; LED_TOGGLE:
+                                 
+                                 ;    ;<-------- Skriv den manglende kode her
+                                 
+                                 ;    RET	
+                                 ; ;*******************************
+                                 
+                                 ; ;*******************************
+                                 ; DELAY:
+                                 ;    LDI  R31,130
+                                 ;    CLR  R30
+                                 ;    CLR  R29
+                                 ; LOOP:
+                                 ;    DEC  R29
+                                 ;    BRNE LOOP
+                                 ;    DEC  R30
+                                 ;    BRNE LOOP
+                                 ;    DEC  R31
+                                 ;    BRNE LOOP
+                                 ;    RET
 
 
 RESOURCE USE INFORMATION
@@ -1937,38 +2144,38 @@ counted separately from r26..r31 here.
 "ATmega2560" register use summary:
 x  :   0 y  :   0 z  :   0 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:   8 r17:   2 r18:   2 r19:   0 r20:   0 
-r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
+r13:   0 r14:   0 r15:   0 r16:  33 r17:   4 r18:   4 r19:   4 r20:  14 
+r21:   2 r22:   2 r23:   2 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
 r29:   0 r30:   0 r31:   0 
-Registers used: 3 out of 35 (8.6%)
+Registers used: 8 out of 35 (22.9%)
 
 "ATmega2560" instruction use summary:
-.lds  :   0 .sts  :   0 adc   :   0 add   :   0 adiw  :   0 and   :   0 
-andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
+.lds  :   0 .sts  :   0 adc   :   3 add   :   1 adiw  :   0 and   :   0 
+andi  :   1 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
 brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
-brne  :   2 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
+brne  :   4 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
 brvs  :   0 bset  :   0 bst   :   0 call  :   1 cbi   :   0 cbr   :   0 
-clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   1 cls   :   0 
-clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
-cpi   :   0 cpse  :   0 dec   :   2 eicall:   0 eijmp :   0 elpm  :   0 
+clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   2 cls   :   0 
+clt   :   0 clv   :   0 clz   :   0 com   :   2 cp    :   0 cpc   :   0 
+cpi   :   0 cpse  :   0 dec   :   5 eicall:   0 eijmp :   0 elpm  :   0 
 eor   :   0 fmul  :   0 fmuls :   0 fmulsu:   0 icall :   0 ijmp  :   0 
-in    :   0 inc   :   1 jmp   :   1 ld    :   0 ldd   :   0 ldi   :   3 
-lds   :   0 lpm   :   0 lsl   :   0 lsr   :   0 mov   :   0 movw  :   0 
+in    :   8 inc   :   1 jmp   :   1 ld    :   0 ldd   :   0 ldi   :  14 
+lds   :   0 lpm   :   0 lsl   :   0 lsr   :   1 mov   :   0 movw  :   0 
 mul   :   0 muls  :   0 mulsu :   0 neg   :   0 nop   :   0 or    :   0 
-ori   :   0 out   :   4 pop   :   0 push  :   0 rcall :   0 ret   :   1 
-reti  :   0 rjmp  :   0 rol   :   0 ror   :   0 sbc   :   0 sbci  :   0 
+ori   :   1 out   :  12 pop   :   0 push  :   0 rcall :   0 ret   :   1 
+reti  :   0 rjmp  :   7 rol   :   0 ror   :   0 sbc   :   0 sbci  :   0 
 sbi   :   0 sbic  :   0 sbis  :   0 sbiw  :   0 sbr   :   0 sbrc  :   0 
-sbrs  :   0 sec   :   0 seh   :   0 sei   :   0 sen   :   0 ser   :   1 
+sbrs  :   8 sec   :   0 seh   :   0 sei   :   0 sen   :   0 ser   :   1 
 ses   :   0 set   :   0 sev   :   0 sez   :   0 sleep :   0 spm   :   0 
-st    :   0 std   :   0 sts   :   0 sub   :   0 subi  :   0 swap  :   0 
+st    :   0 std   :   0 sts   :   0 sub   :   0 subi  :   0 swap  :   1 
 tst   :   0 wdr   :   0 
-Instructions used: 10 out of 116 (8.6%)
+Instructions used: 20 out of 116 (17.2%)
 
 "ATmega2560" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000026     38      0     38  262144   0.0%
+[.cseg] 0x000000 0x00009a    154      0    154  262144   0.1%
 [.dseg] 0x000200 0x000200      0      0      0    8192   0.0%
 [.eseg] 0x000000 0x000000      0      0      0    4096   0.0%
 

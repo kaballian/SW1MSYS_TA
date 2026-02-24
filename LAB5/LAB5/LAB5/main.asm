@@ -97,7 +97,7 @@ HERE:
 
 
     SBRS R20, 7
-    RJMP CASE_6:
+    RJMP CASE_6
     IN R16, PORTB
     INC R16
     OUT PORTB, R16
@@ -122,7 +122,7 @@ CASE_4:
     SBRS R20, 4
     RJMP CASE_3
     IN R16, PORTB
-    COM R16,
+    COM R16
     OUT PORTB, R16
 
 CASE_3:
@@ -138,7 +138,7 @@ SHIFT_LOOP:
 
 
 CASE_2:
-    SBRS PINA, 2
+    SBRS R20, 2
     //TODO - ignore for now
 
 CASE_1:
@@ -151,7 +151,7 @@ CASE_1:
 CASE_0:
     SBRS R20, 0
     JMP MAIN
-    IN R16, PORTB,
+    IN R16, PORTB
     ORI R16, 0b11111111
     OUT PORTB, R16
     
@@ -166,9 +166,9 @@ CASE_0:
 
     //READ PIN A
 
- 
+ MAIN:
     CALL DELAY_1S
-    
+
     RJMP HERE
 
 DELAY_1S:

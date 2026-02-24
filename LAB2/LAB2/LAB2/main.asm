@@ -41,6 +41,7 @@ Data address space:
    OUT  SPL,R16           
    SER  R16              ;PORTB = Outputs
    OUT  DDRB,R16
+
 ;********** PROGRAM-LOOP ********
    
 
@@ -61,18 +62,49 @@ AGAIN:
    RET
 
 
-/*
-   LDI  R16,200
-   STS  0x280,R16
-   LDI  R16,5
-   LDI  R17,17
-   LDS  R16,0x280
-   DEC  R16
-   MOV  R18,R16
-   ADD  R17,R18
-   INC  R17
-   INC  R17
-   COM  R17
-HER:
-   JMP  HER 
-   */
+// trykknap incrementer lyset
+   //DDRx data direction     0 = input, 1 = output
+   //PORTx output/pull up, what you drive   0 = pin goes low, 1 = pin goes high   - PR5824 ex externally pulled up
+   //PINx, pins tate, what you read          
+   CLR R16  ; PORTC = inputs
+   OUT DDRC, R16
+
+   CLR R17  // button state
+   CLR R18  // current state
+   CLR R19  // LED
+   CLR R20  // DELAY1
+   CLR R21  // DELAY2
+   CLR R22  // DELAY3
+
+
+
+
+// program loops and checks PIN state, if a change is on a pin, JUMP TO PRESSED LABEL
+LOOP:
+   SBIS PINC
+   RJMP PRESSED  // jump to pressed function
+   RJMP LOOP //loop again
+
+
+PRESSED:
+   IN R19, PINC ; reads  entire port register to R19
+   ANDI R19, 0b00000001 // check only PIN0
+   OUT PORTB, R19
+   CALL DELAY
+   RJMP
+
+
+
+DELAY:
+   DEC R20
+   BRNE DELAY
+   DEC R21
+   BRNE DELAY
+   DEC R22
+   BRNE DELAY
+   RET
+
+   
+   
+   
+

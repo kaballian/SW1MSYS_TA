@@ -27,7 +27,7 @@ HERE:
 
 // -> write a program that tests the 8 push buttons and plays the correct tone, while the buttons is beind held
 // no button -> no sound
-
+    //READ the PINA register, check if each bit is set, then load the value
     SBIS PINA, 7
     LDI R18, 239
     SBIS PINA, 6  
@@ -45,14 +45,21 @@ HERE:
     SBIS PINA, 0 
     LDI R18, 120
  
-        
+    //READ THE PINA register      
     IN R20, PINA
-    CPI R20, 0xFF
-    BREQ HERE
+    CPI R20, 0xFF //check R20 med immidate 0xFF
+    BREQ HERE // R20 = 0xFF, BREQ to here (no button is pressed)
     COM R16
     OUT PORTB, R16
     CALL DELAY
     RJMP HERE
+
+
+//JMP unconditional jump, destination may be far away
+//4 bytes
+//RJMP unconditional jump relative to current PC
+//range 2048 words, faster than JMP, limited range
+// BREQ is a conditional jump,acts the same as a jump but adds a condition.
 
 // Delay (R18*4us)
 DELAY:

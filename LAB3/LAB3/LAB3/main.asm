@@ -1,130 +1,285 @@
+
+
+//LAB5
+
+
+    LDI R16,HIGH(RAMEND)
+    OUT SPH, R16
+    LDI R16,LOW(RAMEND)
+    OUT SPL, R16
+
+// 1- create a function to add two 32 bit numbers together
+
+// 2- write a program that uses multiple ASM instructions
+
+// 3- write and test functions that uses bitmasking
+
+
+
+
 /*
-* MSYS lab 3
+ADD Rd, Rr
+ADC Rd, Rr
+SUB Rd, Rr
+SBC Rd, Rr
+MUL Rd, Rr
 
 */
+
+// 1 (1*10^9 + 2*10^9)
+// 32 bit value 1
+// 0011 1011 1001 1010 1100 1010 0000 0000
+// 32 bit value 2
+// 0111 0111 0011 0101 1001 0100 0000 0000
+/*
+LSB first
+Value 1 gets assigned R19-R16
+
+R16 = 00000000
+R17 = 11001010
+R18 = 10011010
+R19 = 00111011
+
+Value 2 gets assigned R23-R20 
+R20 = 00000000 
+R21 = 10010100
+R22 = 00110101
+R23 = 01110111
+
+addition goes as follows
+
+R16 = R16 + R20  (may generate a carry)
+R17 = R17 + R21 + C
+R18 = R18 + R22 + C
+R19 = R19 + R23 + C
+
+
+*/
+
+/*// load all registers
+    LDI R16, 0b00000000
+    LDI R17, 0b11001010
+    LDI R18, 0b10011010
+    LDI R19, 0b00111011
+    LDI R20, 0b00000000
+    LDI R21, 0b10010100
+    LDI R22, 0b00110101
+    LDI R23, 0b01110111
+
+// do calculation
+
+    ADD R16, R20
+    ADC R17, R21
+    ADC R18, R22
+    ADC R19, R23*/
+//UNSIGNED BTW! - only works as unsigned, due to the fact signed is 2.147.483.647 as max value
+    
+//Ex 2
+
+//Port A is inputs
+
+    CLR R16
+    OUT DDRA, R16
    
+//Port B is outputs
+    SER R16
+    OUT DDRB, R16
+//turn off all LEDs
+    CLR R16
+    OUT PORTB, R16
 
-    LDI  R16,HIGH(RAMEND) ;Initialize Stack Pointer
-    OUT  SPH,R16
-    LDI  R16,LOW(RAMEND)
-    OUT  SPL,R16           
-    SER  R16              ;PORTB = Outputs
-    OUT  DDRB,R16
-    CLR  R16                 ; sluk alle dioder
-    OUT  PORTB, R16
-    CLR  R21
-    CLR  R22
-
-// loop
-
-/*
-Tone Frekvens | T = 1/f | T/2 | (T/2)/(4us)
-c | 523,25 Hz   | 1911  us |  956 us|  239
-D | 587,33 Hz   | 1792  us |  851 us|  213
-E | 659,26 Hz   | 1517  us |  758 us|  190
-F | 698,46 Hz   | 1432  us |  716 us|  179
-G | 783,99 Hz   | 1276  us |  638 us|  160
-A | 880,00 Hz   | 1136  us |  568 us|  142
-H | 987,77 Hz   | 1012  us |  506 us|  127
-C | 1046,50 Hz  | 956   us |  478 us|  120
-
-*/
-
-;c
-LDI R20, 239
-    call TONE
-;D
-LDI R20, 213
-    call TONE
-;E
-LDI R20, 190
-    call TONE
-;F
-LDI R20, 179
-    call TONE
-;G
-LDI R20, 160 
-    call TONE
-;A
-LDI R20, 142
-    call TONE
-;H
-LDI R20, 127
-    call TONE
-;C
-LDI R20, 120
-    call TONE
-
+//pool all the PINS
 HERE:
-JMP HERE  ;remain here
+    //sample inputs ONCE
+
+    IN R20, PINA
+    COM R20
 
 
-// delay (R18 * 4us)
-// creates a delay that is 4us * the number in the register
+    SBRS R20, 7
+    RJMP CASE_6:
+    IN R16, PORTB
+    INC R16
+    OUT PORTB, R16
+    
+CASE_6:
+    SBRS R20, 6
+    RJMP CASE_5
+    IN R16, PORTB
+    DEC R16
+    OUT PORTB, R16
 
-DELAY:
-    LDI R17, 21 ; <<----
-AGAIN:           ; cycles | branch | NOT branch |     1/16MHz = 62.5ns
-    DEC R17         ; 1 | 1                       
-    BRNE AGAIN      ; 2 | 1                              
-    DEC R18         ; 1 | 1     
-    BRNE DELAY      ; 2 | 1   
-    RET             ; 4
-
-/*
-one iteraton = 3 (taken) | one iteration = 4 (not taken)
-(N-1) * taken + last * not taken
-inner:
-(N-1) * 3 + 2 => 3N - 3+2
-
-62.5ns * N = 4e-6 -> N = 4e-6/62.5e-9 = 64
-
-3N ~~ 64 => N=64/3 
-
-(21-1) * 3 + 1 * 2 = 
-*/
+CASE_5:
+    SBRS R20, 5
+    RJMP CASE_4
+    IN R16, PORTB
+    SWAP R16
+    OUT PORTB, R16
 
 
-//solution than works
-; TONE:
-; ; LDI R18, 200 ; <<--- remove for part 2
-;             ; insert part 2 code
+CASE_4:
+
+    SBRS R20, 4
+    RJMP CASE_3
+    IN R16, PORTB
+    COM R16,
+    OUT PORTB, R16
+
+CASE_3:
+    SBRS R20, 3
+    RJMP CASE_2
+    IN R16, PORTB
+    LDI R17, 4
+SHIFT_LOOP:
+    LSR R16
+    DEC R17
+    BRNE SHIFT_LOOP
+    OUT PORTB, R16
 
 
+CASE_2:
+    SBRS PINA, 2
+    //TODO - ignore for now
 
-;     LDI R21, 250  ; load 250 to R21
-; TONE_LOOP:
-;     COM R22       ; ones complement on R22 (inverting all bits)
-;     OUT PORTB, R22 ; send it to portb'
-;     MOV R18, R20    ; copy R20 values to R18
-;     CALL DELAY      ; self explanatory lule
-;     DEC R21         ; decrement by 1
-;     BRNE TONE_LOOP
-;     RET
+CASE_1:
+    SBRS R20, 1
+    RJMP CASE_0
+    IN R16, PORTB
+    ANDI R16, 0b01111110
+    OUT PORTB, R16
 
+CASE_0:
+    SBRS R20, 0
+    JMP MAIN
+    IN R16, PORTB,
+    ORI R16, 0b11111111
+    OUT PORTB, R16
+    
+//SW7 - inc PORTB
+//SW6 - dec PORTB
+//SW5 - value of LED7-4 switches with LED3-0 (use a SWAPF or something)
+//SW4 - complement all LED's
+//SW3 - value of PORTB is divided by 8 (shift down)
+//SW2 - value of PORTB is divided by 7 (actual divison)
+//SW1 - LED7 & 0 are turned off, while others are unaffected
+//SW0 - LED7 & 0 are turned on, while others are unaffected
 
-// bonus solution, length independen of frequency
-// R19 = note duration for all freqs
-// R20 = half period delay 
-// calc length of tone: toggle = 300ms / (T/2)
-TONE:
-    LDI R19, 200 ; move the note length into R19
+    //READ PIN A
 
-TONE_LOOP:
-    COM R22
-    OUT PORTB, R22
-    MOV R18, R20
-    CALL DELAY
+ 
+    CALL DELAY_1S
+    
+    RJMP HERE
+
+DELAY_1S:
+    LDI R18, 100 ; outer loop
+OUTER:
+    LDI R19, 200 ; middle
+MIDDLE:
+    LDI R20, 200 ; inner
+INNER:
     DEC R20
-    BRNE TONE_LOOP
-
+    BRNE INNER
+    DEC R19
+    BRNE MIDDLE
+    DEC R18
+    BRNE OUTER
     RET
 
 
 
+; // OFFICIAL LØSNING
 
 
+;  HERE:
+;    LDI  R20,2             ;Tænd LED 2
+;    CALL LED_ON
+;    CALL DELAY
+
+;    LDI  R20,7             ;Tænd LED 7
+;    CALL LED_ON
+;    CALL DELAY
+
+;    SER  R16               ;Tænd alle LEDs
+;    OUT  PORTB,R16
+;    CALL DELAY
+
+;    LDI  R20,5             ;Sluk LED 5
+;    CALL LED_OFF
+;    CALL DELAY
+
+;    LDI  R20,0             ;Sluk LED 0
+;    CALL LED_OFF
+;    CALL DELAY
+
+;    LDI  R20,0             ;Toggle LED 0
+;    CALL LED_TOGGLE
+;    CALL DELAY
+
+;    LDI  R20,7             ;Toggle LED 7
+;    CALL LED_TOGGLE
+;    CALL DELAY
+
+;    CLR  R16               ;Sluk alle LEDs
+;    OUT  PORTB,R16
+;    CALL DELAY
+
+;    JMP HERE               ;Gentag loop
+
+; ;************ LED_OFF **********
+; ;***** Slukker en LED på PB ****
+; ;***** Bit nr.(0-7) i R20   ****
+; ;*******************************
+; LED_OFF:
+;    LDI  R21,1             ;R21 = 0b00000001
+;    CPI  R20,0
+;    BREQ KLAR1             ;Hop, hvis LED nr. = 0
+; IGEN1:
+;    LSL  R21               ;Venstre-skift R21
+;    DEC  R20               ;ialt "LED nr." pladser
+;    BRNE IGEN1
+; KLAR1:
+;    COM  R21               ;Inverter "masken" 
+;    IN   R20,PINB          ;Aflæs alle LEDs
+;    AND  R20,R21           ;- lav bitvis AND   
+;    OUT  PORTB,R20         ;- og skriv ud til LEDs igen
+;    RET	
+; ;*******************************
+
+; ;************ LED_ON ***********
+; ;***** Taender en LED på PB ****
+; ;***** Bit nr.(0-7) i R20   ****
+; ;*******************************
+; LED_ON:
+
+;    ;<-------- Skriv den manglende kode her
 
 
+;    RET	
+; ;*******************************
 
+; ;********** LED_TOGGLE *********
+; ;***** Toggler en LED på PB ****
+; ;***** Bit nr.(0-7) i R20   ****
+; ;*******************************
+; LED_TOGGLE:
 
+;    ;<-------- Skriv den manglende kode her
+
+;    RET	
+; ;*******************************
+
+; ;*******************************
+; DELAY:
+;    LDI  R31,130
+;    CLR  R30
+;    CLR  R29
+; LOOP:
+;    DEC  R29
+;    BRNE LOOP
+;    DEC  R30
+;    BRNE LOOP
+;    DEC  R31
+;    BRNE LOOP
+;    RET
+; ;*******************************
